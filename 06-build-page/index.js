@@ -28,41 +28,34 @@ function readTemplate() {
 }
 
 async function readComponents() {
-  try {
-    const componentsFiles = await fsPromises.readdir(path.join(__dirname, 'components'), {withFileTypes: true});
-    for (const item of componentsFiles) {
+  
+  const componentsFiles = await fsPromises.readdir(path.join(__dirname, 'components'), { withFileTypes: true });
+  let componentsLoading = componentsFiles.map(item => {
+    return new Promise((resolve, reject) => {
       if (item.isFile()) {
         const pathToFile = path.join(__dirname, 'components', item.name);
         const extention = path.extname(pathToFile);
         if (extention != '.html')
-          continue;
+          resolve()
         const name = path.basename(pathToFile, extention);
-        components[name] = {text: '', ready: false};
+        components[name] = { text: '', ready: false };
         const stream = fs.createReadStream(path.join(__dirname, 'components', item.name), 'utf-8');
         stream.on('data', chunk => components[name].text += chunk);
-        stream.on('end', () => {
-          components[name].ready = true;
-          writeHtml();
-        });
-        stream.on('error', error => console.error(error));
+        stream.on('end', () => { resolve()});
+        stream.on('error', error => reject());
       }
-      
-    }
-  } catch (err) {
-    console.error(err);
-  }
+    });
+    
+    });
+Promise.allSettled(componentsLoading).then(responses => { writeHtml()});
+  
 }
 
 function writeHtml() {
   let result = temlateString;
   for (let comp in components) {
-    if (!components[comp].ready) {
-      return;
-    } else {
-      result = result.split(`{{${comp}}}`).join(components[comp].text);
-    }
+    result = result.split(`{{${comp}}}`).join(components[comp].text);
   }
-
   temlateString = result;
   fs.writeFile(path.join(__dirname,'project-dist',  'index.html'), temlateString, (err) => {
     if (err) throw err;
