@@ -1,20 +1,23 @@
 const path = require('path');
 const fs = require('fs');
 const fsPromises = require('fs/promises');
-fs.rmdir(path.join(__dirname, 'project-dist'), { recursive: true },(err) => {
-  if (err) throw err;
-});
 const components = {};
 let temlateString = '';
 
 
+readTemplate();
 
-setTimeout(readTemplate, 500);
-
-function readTemplate() {
-  fs.mkdir(path.join(__dirname, 'project-dist'), { recursive: true },(err) => {
-    if (err) throw err;
-  });
+async function readTemplate() {
+  try {
+    await fsPromises.rm(path.join(__dirname, 'project-dist'), {recursive: true});
+  } catch (err) {
+    await fsPromises.mkdir(path.join(__dirname, 'project-dist'), {}, (e) => {});
+  }
+  try {
+    await fsPromises.mkdir(path.join(__dirname, 'project-dist'), {}, (e) => {});
+  } catch (err) {
+    
+  }
   
   const stream = fs.createReadStream(path.join(__dirname, 'template.html'), 'utf-8');
   

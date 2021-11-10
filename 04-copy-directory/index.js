@@ -3,9 +3,6 @@ const fs = require('fs');
 const fsPromises = require('fs/promises');
 
 async function copyAll(pathRead,pathWrite) {
-  fs.mkdir(pathWrite, { recursive: true },(err) => {
-    if (err) throw err;
-  });
   try {
     const content = await fsPromises.readdir(pathRead, {withFileTypes: true});
     for (const item of content) {
@@ -23,10 +20,18 @@ async function copyAll(pathRead,pathWrite) {
   }
   
 }
-fs.rmdir(path.join(__dirname, 'files-copy'), {recursive: true}, (err) => {
-  if (err) throw err;
-});
-setTimeout(start, 500);
-function start() {
+async function start() {
+  try {
+    await fsPromises.rm(path.join(__dirname, 'files-copy'), {recursive: true});
+  } catch (err) {
+    await fsPromises.mkdir(path.join(__dirname, 'files-copy'), {}, (e) => {});
+  }
+  try {
+    await fsPromises.mkdir(path.join(__dirname, 'files-copy'), {}, (e) => {});
+  } catch (err) {
+    
+  }
   copyAll(path.join(__dirname, 'files'), path.join(__dirname, 'files-copy'));
 }
+
+start();

@@ -10,7 +10,7 @@ rl.on('line', (input) => {
   if (input == 'exit') {
     process.exit();
   } else {
-    output2.write(input);
+    output2.write(input + '\r\n');
   }
 });
 
